@@ -26,7 +26,7 @@ app.use(flash());
 // console.log(__dirname);
 // seedDB();
 
-
+app.locals.moment = require('moment');
 // PASSPORT CONFIGURATION
 app.use(require("express-session")({
     secret:"Cookie is the cutest cat",
