@@ -6,15 +6,31 @@ var middleware=require("../middleware"); // it automatically require the index.j
 //INDEX - show all campgrounds 
 //INDEX /dogs mongoose method: Dog.find()
 router.get("/", function(req, res){
-    // console.log(req.user);
-    // Get all campgrounds from DB {} look for everything
-    Campground.find({}, function(err, allCampgrounds){
-       if(err){
-           console.log(err);
-       } else {
-          res.render("campgrounds/index",{campgrounds:allCampgrounds,currentUser:req.user});//send allCampgrounds found to the ejs file
-       }
-    });
+    var noMatch = null;
+    if(req.query.search){
+        const regex = new RegExp(escapeRegex(req.query.search), 'gi');
+        Campground.find({name: regex}, function(err, allCampgrounds){
+            if(err){
+                console.log(err);
+            } else {
+                if(allCampgrounds.length < 1) {
+                  noMatch = "No campgrounds match that query, please try again.";
+                }
+                res.render("campgrounds/index",{campgrounds:allCampgrounds,currentUser:req.user,noMatch:noMatch});//send allCampgrounds found to the ejs file
+               }
+            }); 
+
+    } else{
+        // Get all campgrounds from DB {} look for everything
+        Campground.find({}, function(err, allCampgrounds){
+            if(err){
+                console.log(err);
+            } else {
+                  res.render("campgrounds/index",{campgrounds:allCampgrounds,currentUser:req.user,noMatch:noMatch});//send allCampgrounds found to the ejs file
+               }
+            }); 
+    }
+
 });
 
 //CREATE - add new campground to DB - Dog.create()
@@ -98,6 +114,8 @@ router.delete("/:id",middleware.checkCampgroundOwnership,function(req,res){
     })
 })
 
-
+function escapeRegex(text) {
+    return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+};
 
 module.exports=router;
